@@ -1,0 +1,7 @@
+ru\bykov\utils\MessageUtils.class
+ru\bykov\controller\UpdateController.class
+ru\bykov\DispatcherApplication.class
+ru\bykov\service\AnswerConsumer.class
+ru\bykov\service\UpdateProducer.class
+ru\bykov\controller\TelegramBot.class
+ru\bykov\service\impl\UpdateProducerImpl.class
