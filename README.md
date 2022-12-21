@@ -3,8 +3,10 @@ TelegramBotStorage
 Скачать образ rabbitmq:
 $ docker pull rabbitmq:3.11.0-management
 
+
 Создать volume:
 $ docker volume create rabbitmq_data
+
 
 Запустить контейнер с rabbitmq:
 $ docker run -d --hostname rabbitmq --name rabbitmq -p 5672:5672 -p 15672:15672 -v rabbitmq_data:/var/lib/rabbitmq --restart=unless-stopped rabbitmq:3.11.0-management
@@ -16,11 +18,14 @@ $ docker run -d --hostname rabbitmq --name rabbitmq -p 5672:5672 -p 15672:15672 
 -v примонтировать volume (том), т. е. внешнее хранилище данных;
 --restart=unless-stopped контейнер будет подниматься заново при каждом перезапуске системы (точнее, при запуске docker);
 
+
 Так путь к volume может выглядеть в Windows:
 rabbitmq_data:c:\rabbitmq_data
 
+
 Подключиться к контейнеру с rabbitmq:
 $ docker exec -it rabbitmq /bin/bash
+
 
 Внутри контейнера создать пользователя, сделать его админом и установить права:
 $ rabbitmqctl add_user userok p@ssw0rd
