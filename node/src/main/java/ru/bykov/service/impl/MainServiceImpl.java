@@ -8,14 +8,18 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
 import ru.bykov.dao.AppUserDAO;
 import ru.bykov.dao.RawDataDAO;
+import ru.bykov.entity.AppDocument;
 import ru.bykov.entity.AppUser;
 import ru.bykov.entity.RawData;
+import ru.bykov.exceptions.UploadFileException;
+import ru.bykov.service.FileService;
 import ru.bykov.service.MainService;
 import ru.bykov.service.ProducerService;
+import ru.bykov.service.enums.ServiceCommand;
 
 import static ru.bykov.entity.enums.UserState.BASIC_STATE;
 import static ru.bykov.entity.enums.UserState.WAIT_FOR_EMAIL_STATE;
-import static ru.bykov.service.enums.ServiceCommands.*;
+import static ru.bykov.service.enums.ServiceCommand.*;
 
 @Service
 @Log4j
@@ -24,6 +28,7 @@ public class MainServiceImpl implements MainService {
     private final RawDataDAO rawDataDAO;
     private final ProducerService producerService;
     private final AppUserDAO appUserDAO;
+    private final FileService fileService;
 
     @Override
     public void processTextMessage(Update update) {
@@ -32,8 +37,8 @@ public class MainServiceImpl implements MainService {
         var userState = appUser.getState();
         var text = update.getMessage().getText();
         var output = "";
-
-        if (CANSEL.equals(text)) {
+        var serviceCommand = ServiceCommand.fromValue(text);
+        if (CANSEL.equals(serviceCommand)) {
             output = canselProcess(appUser);
         } else if (BASIC_STATE.equals(userState)) {
             output = processServiceCommand(appUser, text);
@@ -59,9 +64,18 @@ public class MainServiceImpl implements MainService {
         if (isNotAllowToSendContent(chatId, appUser)){
             return;
         }
-        //TODO добавить сохранение документа :)
-        var answer = "Документ успешно загружен! Ссылка для фото: http://test.ru/get-doc/777";
-        sendAnswer(answer, chatId);
+        try {
+            AppDocument doc = fileService.processDoc(update.getMessage());
+            //TODO добавить сохранение документа :)
+            var answer = "Документ успешно загружен! " +
+                    "Ссылка для фото: http://test.ru/get-doc/777";
+            sendAnswer(answer, chatId);
+        } catch (UploadFileException e) {
+            log.error(e);
+            String error = "К сожалению, загрузка файла не удалась. Повторите попытку позже!";
+            sendAnswer(error, chatId);
+        }
+
 
     }
 
@@ -69,9 +83,11 @@ public class MainServiceImpl implements MainService {
         var userState = appUser.getState();
         if (!appUser.getIsActive()){
             var error = "Зарегистрируйтесь или активируйте свою учетную запись для загрузки контента";
+            sendAnswer(error, chatId);
             return true;
         } else if (!BASIC_STATE.equals(userState)){
             var error = "Зарегистрируйтесь или активируйте свою учетную запись для загрузки контента";
+            sendAnswer(error, chatId);
             return true;
         }
         return false;
@@ -120,7 +136,7 @@ public class MainServiceImpl implements MainService {
     private String canselProcess(AppUser appUser) {
         appUser.setState(BASIC_STATE);
         appUserDAO.save(appUser);
-        return "Команда отменена";
+        return "Команда отменена!";
     }
 
 

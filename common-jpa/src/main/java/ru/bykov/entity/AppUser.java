@@ -2,7 +2,6 @@ package ru.bykov.entity;
 
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.TypeDef;
 import ru.bykov.entity.enums.UserState;
 
 import javax.persistence.*;
